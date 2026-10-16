@@ -3,415 +3,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dialog MC - Minecraft Dialog Generator</title>
+    <title>Dialog MC Studio Pro</title>
     <style>
         :root {
-            --bg-primary: #121212;
-            --bg-secondary: #1e1e1e;
-            --bg-tertiary: #2d2d2d;
-            --accent: #4caf50;
-            --accent-hover: #45a049;
-            --text-main: #e0e0e0;
-            --text-muted: #a0a0a0;
-            --warning: #ff9800;
-            --border: #3d3d3d;
+            --bg-base: #0a0c10;
+            --bg-surface: #121620;
+            --bg-element: #1a1f2c;
+            --border: #2d364d;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --warn: #f59e0b;
+            --danger: #ef4444;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-base); color: var(--text-main); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            padding: 20px;
-        }
+        header { background: var(--bg-surface); padding: 14px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: #fff; }
+        .version-badge { background: var(--bg-element); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-family: monospace; color: var(--accent); }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 20px;
-        }
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        
+        .config-panel { width: 50%; background: var(--bg-surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; padding: 24px; gap: 20px; }
+        .output-panel { width: 50%; background: var(--bg-base); display: flex; flex-direction: column; overflow-y: auto; padding: 24px; gap: 20px; }
 
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
+        .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 4px; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; background: var(--bg-element); padding: 16px; border-radius: 8px; border: 1px solid var(--border); }
+        label { font-size: 13px; font-weight: 600; color: var(--text-main); }
+        
+        select, input[type="text"], textarea { background: var(--bg-base); border: 1px solid var(--border); color: var(--text-main); padding: 10px; border-radius: 6px; font-size: 14px; outline: none; transition: border 0.2s; width: 100%; }
+        select:focus, input:focus, textarea:focus { border-color: var(--accent); }
 
-        .version-selector {
-            display: flex;
-            gap: 10px;
-        }
+        .flex-row { display: flex; gap: 12px; }
+        .flex-row > * { flex: 1; }
 
-        .version-btn {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
+        .array-item { background: var(--bg-base); border: 1px solid var(--border); padding: 14px; border-radius: 6px; margin-bottom: 12px; position: relative; }
+        .array-item .remove-btn { position: absolute; top: 14px; right: 14px; background: transparent; border: none; color: var(--danger); cursor: pointer; font-size: 12px; font-weight: bold; }
+        .add-btn { background: var(--bg-element); border: 1px dashed var(--border); color: var(--accent); padding: 12px; border-radius: 6px; cursor: pointer; font-size: 13px; text-align: center; width: 100%; font-weight: 600; transition: all 0.2s; }
+        .add-btn:hover { background: rgba(56, 189, 248, 0.05); border-color: var(--accent); }
 
-        .version-btn.active {
-            background: var(--accent);
-            color: #000;
-            font-weight: 600;
-            border-color: var(--accent);
-        }
+        .validation-box { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warn); color: var(--warn); padding: 14px; border-radius: 8px; font-size: 13px; display: none; line-height: 1.5; font-weight: 500; }
+        .validation-box.active { display: block; }
 
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            flex-grow: 1;
-        }
+        .json-wrapper { background: #05070b; border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: 'Fira Code', monospace; font-size: 13px; white-space: pre-wrap; overflow-x: auto; color: #e2e8f0; position: relative; margin-bottom: 10px; min-height: 80px; }
+        .copy-btn { position: absolute; top: 12px; right: 12px; background: var(--bg-element); border: 1px solid var(--border); color: var(--text-main); padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600; z-index: 10; }
+        .copy-btn:hover { background: var(--border); }
 
-        .panel {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            overflow-y: auto;
-            max-height: calc(100vh - 120px);
-        }
+        .mc-preview { background: #141414; border: 3px solid #2c2c2c; border-radius: 4px; padding: 24px; font-family: monospace; color: #fff; min-height: 180px; display: flex; flex-direction: column; justify-content: space-between; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .mc-title { font-size: 18px; color: #ffffff; text-align: center; margin-bottom: 14px; font-weight: bold; text-shadow: 2px 2px #000; }
+        .mc-body { font-size: 14px; color: #aaaaaa; text-shadow: 1px 1px #000; line-height: 1.6; margin-bottom: 24px; text-align: center; white-space: pre-wrap; }
+        .mc-buttons-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .mc-button { background: #4a4a4a; border: 2px solid #000; color: #e0e0e0; padding: 8px 18px; font-size: 14px; text-shadow: 1px 1px #000; text-align: center; cursor: pointer; min-width: 120px; box-shadow: inset -2px -2px #1e1e1e, inset 2px 2px #7a7a7a; font-weight: bold; }
+        .mc-button:hover { background: #5c5c5c; color: #ffffff; border-color: #ffffff; }
 
-        .section-title {
-            font-size: 1.1rem;
-            color: var(--text-main);
-            border-left: 3px solid var(--accent);
-            padding-left: 8px;
-            margin-bottom: 10px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        input, select, textarea {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--accent);
-        }
-
-        .node-container {
-            border: 1px solid var(--border);
-            background: var(--bg-primary);
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 10px;
-            position: relative;
-        }
-
-        .node-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .btn {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
-
-        .btn:hover {
-            background: var(--border);
-        }
-
-        .btn-add {
-            background: var(--accent);
-            color: #000;
-            font-weight: 600;
-            border: none;
-        }
-
-        .btn-add:hover {
-            background: var(--accent-hover);
-        }
-
-        .btn-danger {
-            background: #cf6679;
-            color: #000;
-            border: none;
-        }
-
-        .btn-danger:hover {
-            background: #b05464;
-        }
-
-        .output-box {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 15px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9rem;
-            white-space: pre-wrap;
-            word-break: break-all;
-            flex-grow: 1;
-            overflow-y: auto;
-            color: #ffb74d;
-        }
-
-        .validation-warning {
-            background: rgba(255, 152, 0, 0.1);
-            border: 1px solid var(--warning);
-            color: var(--warning);
-            padding: 12px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            display: none;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .picker-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 5px;
-        }
-
-        .action-row {
-            display: flex;
-            gap: 10px;
-        }
+        .picker-group { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .picker-tag { background: var(--bg-base); border: 1px solid var(--border); color: var(--text-muted); font-size: 11px; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-family: monospace; font-weight: 600; }
+        .picker-tag:hover { border-color: var(--accent); color: var(--text-main); }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Dialog MC</h1>
-        <div class="version-selector">
-            <button class="version-btn active" onclick="setVersion('1.21.1')">Java 1.21.1</button>
-            <button class="version-btn" onclick="setVersion('26.2')">NeoForge 26.2 (JSON)</button>
+        <h1><span>💬</span> Dialog MC Studio Pro</h1>
+        <div style="display: flex; gap: 16px; align-items: center;">
+            <label for="versionSelect" style="font-size: 13px; color: var(--text-muted);">Engine Version:</label>
+            <select id="versionSelect" style="padding: 6px 12px; font-size: 13px; width: auto;" onchange="updateAll()">
+                <option value="1.21.1">Minecraft Java 1.21.1 / 1.21.6</option>
+                <option value="26.2">NeoForge 26.2+ (Modern Components)</option>
+            </select>
+            <div class="version-badge">API v2.0</div>
         </div>
     </header>
 
-    <div class="container">
-        <!-- Configuration Panel -->
-        <div class="panel">
-            <div class="section-title">Global Settings</div>
-            
-            <div class="form-group">
-                <label>NPC Name / Entity Selector</label>
-                <input type="text" id="npcName" value="Villager" oninput="generateOutput()">
+    <div class="main-container">
+        <!-- LEFT PANEL: CONFIGURATION -->
+        <div class="config-panel">
+            <div class="validation-box" id="warnBox"></div>
+
+            <div>
+                <div class="section-title">Structure Parameters</div>
+                <div class="form-group">
+                    <label>Dialog Screen Layout Type</label>
+                    <select id="dialogType" onchange="toggleFields(); updateAll();">
+                        <option value="notice">Notice (Single Action Layout)</option>
+                        <option value="confirmation">Confirmation (Dual Action Layout)</option>
+                        <option value="multi_action">Multi Action (Choice Matrix Layout)</option>
+                        <option value="server_links">Server Links (Web Redirect Layout)</option>
+                        <option value="dialog_list">Dialog List (Branching Tree Layout)</option>
+                    </select>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Dialog System Mode</label>
-                <select id="dialogMode" onchange="generateOutput()">
-                    <option value="tellraw">Tellraw Command Sequential Sequence</option>
-                    <option value="datapack">Datapack Dialogue Config Format</option>
-                </select>
+            <div>
+                <div class="section-title">Content Properties (Raw Text / JSON Message)</div>
+                <div class="form-group">
+                    <label>Dialog Title Component</label>
+                    <input type="text" id="dialogTitle" value="Greeting, Adventurer!" oninput="updateAll()">
+                    <div class="picker-group">
+                        <span class="picker-tag" onclick="insertTemplate('dialogTitle', '{\&quot;selector\&quot;:\&quot;@p\&quot;}')">@p Selector</span>
+                        <span class="picker-tag" onclick="insertTemplate('dialogTitle', '{\&quot;score\&quot;:{\&quot;name\&quot;:\&quot;*\&quot;,\&quot;objective\&quot;:\&quot;objective_name\&quot;}}')">Scoreboard Value</span>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label>Dialog Body Text Component</label>
+                    <textarea id="dialogBody" rows="4" oninput="updateAll()">Welcome to our world system. Please choose an interaction option listed below to execute your next dynamic action chain.</textarea>
+                    <div class="picker-group">
+                        <span class="picker-tag" onclick="insertTemplate('dialogBody', '{\&quot;translate\&quot;:\&quot;menu.welcome.node\&quot;}')">Translation Key</span>
+                        NBT Data Reader</span>
+                        <span class="picker-tag" onclick="insertTemplate('dialogBody', '{\&quot;keybind\&quot;:\&quot;key.use\&quot;}')">Keybind Hook</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="section-title">Dialog Nodes & Dynamic Insertions</div>
-            <div id="nodesList"></div>
-            
-            <button class="btn btn-add" onclick="addNode()">+ Add Dialog Text Window / Option</button>
+            <div>
+                <div class="section-title" id="actionsTitle">Interactive Action Elements</div>
+                <div id="actionsContainer"></div>
+                <button class="add-btn" style="margin-top: 4px;" onclick="addActionItem()">+ Add Action Element</button>
+            </div>
         </div>
 
-        <!-- Live Output Panel -->
-        <div class="panel">
-            <div class="section-title">Generated Config / Commands</div>
-            
-            <div class="validation-warning" id="warningBox">
-                <strong>⚠️ Verification Warning:</strong> <span id="warningText"></span>
+        <!-- RIGHT PANEL: INTERACTIVE PREVIEW & TERMINAL OUTPUTS -->
+        <div class="output-panel">
+            <div>
+                <div class="section-title">In-Game Visual Simulation Monitor</div>
+                <div class="mc-preview">
+                    <div>
+                        <div class="mc-title" id="previewTitle">Dialog Title</div>
+                        <div class="mc-body" id="previewBody">Dialog text payload area rendering inside the graphic UI bounds.</div>
+                    </div>
+                    <div class="mc-buttons-container" id="previewButtons"></div>
+                </div>
+            </div>
+            <div>
+                <div class="section-title">Datapack Node Object: Generated JSON</div>
+                <div class="json-wrapper">
+                    <button class="copy-btn" onclick="copyJSON()">Copy Code</button>
+                    <pre><code id="jsonOutput">{}</code></pre>
+                </div>
             </div>
 
-            <div class="output-box" id="outputCode">Select or create components to view commands.</div>
-            
-            <div class="action-row">
-                <button class="btn" style="flex-grow: 1;" onclick="copyToClipboard()">Copy Code</button>
+            <div>
+                <div class="section-title">Runtime Command Access Node</div>
+                <div class="json-wrapper">
+                    <button class="copy-btn" onclick="copyCommand()">Copy Command</button>
+                    <pre><code id="commandOutput">/dialog show @s ...</code></pre>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        let currentVersion = '1.21.1';
-        let nodes = [
-            { id: 1, type: 'text', value: 'Hello adventurer! Welcome to the realm.', target: 'player' }
+        let actionsList = [
+            { label: "Accept Terms", type: "command", value: "/say Terms Accepted" },
+            { label: "Decline Path", type: "command", value: "/say Path Denied" }
         ];
 
-        function setVersion(version) {
-            currentVersion = version;
-            document.querySelectorAll('.version-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.innerText.includes(version));
-            });
+        function insertTemplate(targetId, template) {
+            const el = document.getElementById(targetId);
+            el.value = template;
+            updateAll();
+        }
+
+        function toggleFields() {
+            const type = document.getElementById('dialogType').value;
+            const titleLabel = document.getElementById('actionsTitle');
             
-            const modeSelect = document.getElementById('dialogMode');
-            if (version === '26.2') {
-                modeSelect.value = 'datapack';
+            if (type === 'server_links') {
+                titleLabel.innerText = "Server Links Configuration Matrix";
+            } else if (type === 'dialog_list') {
+                titleLabel.innerText = "Branch Nodes Array (Dialog List Links)";
             } else {
-                modeSelect.value = 'tellraw';
+                titleLabel.innerText = "Interactive Action Elements";
             }
+            renderActionsForm();
+        }
+
+        function addActionItem() {
+            const currentType = document.getElementById('dialogType').value;
+            const actionType = currentType === 'server_links' ? 'url' : 'command';
+            const actionValue = currentType === 'server_links' ? 'https://github.com' : '/me executed action chain';
             
-            generateOutput();
+            actionsList.push({ label: "New Button", type: actionType, value: actionValue });
+            renderActionsForm();
+            updateAll();
         }
 
-        function addNode() {
-            const id = nodes.length ? nodes[nodes.length - 1].id + 1 : 1;
-            nodes.push({ id: id, type: 'text', value: '', target: 'player' });
-            renderNodes();
-            generateOutput();
+        function removeActionItem(index) {
+            actionsList.splice(index, 1);
+            renderActionsForm();
+            updateAll();
         }
 
-        function removeNode(id) {
-            nodes = nodes.filter(n => n.id !== id);
-            renderNodes();
-            generateOutput();
+        function updateActionData(index, field, value) {
+            actionsList[index][field] = value;
+            updateAll();
         }
 
-        function updateNode(id, field, value) {
-            const node = nodes.find(n => n.id === id);
-            if (node) {
-                node[field] = value;
-                generateOutput();
-            }
-        }
+        function renderActionsForm() {
+            const container = document.getElementById('actionsContainer');
+            container.innerHTML = "";
+            const currentType = document.getElementById('dialogType').value;
 
-        function renderNodes() {
-            const container = document.getElementById('nodesList');
-            container.innerHTML = '';
+            actionsList.forEach((item, idx) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'array-item';
+                
+                let valueLabel = "Action Target Payload Value";
+                let typeOptions = `
+                    <option value="command" ${item.type==='command'?'selected':''}>Execute Command (run_command)</option>
+                    <option value="dialog" ${item.type==='dialog'?'selected':''}>Transition to Dialog ID (open_dialog)</option>
+                `;
 
-            nodes.forEach((node, index) => {
-                const nodeDiv = document.createElement('div');
-                nodeDiv.className = 'node-container';
-                nodeDiv.innerHTML = `
-                    <div class="node-header">
-                        <span style="font-weight:600; font-size:0.9rem;">Element #${index + 1}</span>
-                        <button class="btn btn-danger" onclick="removeNode(${node.id})">Delete</button>
-                    </div>
-                    <div class="form-group">
-                        <label>Insertion Picker Type</label>
-                        <select onchange="updateNode(${node.id}, 'type', this.value); renderNodes();">
-                            <option value="text" ${node.type === 'text' ? 'selected' : ''}>Plain Text</option>
-                            <option value="player" ${node.type === 'player' ? 'selected' : ''}>Player Name Selector (@p)</option>
-                            <option value="item" ${node.type === 'item' ? 'selected' : ''}>Item Component Reference</option>
-                            <option value="score" ${node.type === 'score' ? 'selected' : ''}>Objective Score / Variable</option>
-                        </select>
-                    </div>
-                    <div class="picker-group">
-                        <div class="form-group">
-                            <label>Content / Selector Value</label>
-                            <input type="text" value="${node.value}" placeholder="Value..." oninput="updateNode(${node.id}, 'value', this.value)">
+                if (currentType === 'server_links') {
+                    valueLabel = "Secure Resource Web URL String";
+                    typeOptions = `<option value="url" selected>External Web Link (URL)</option>`;
+                    if (item.type !== 'url') item.type = 'url';
+                } else {
+                    if (item.type === 'url') item.type = 'command';
+                }
+
+                itemDiv.innerHTML = `
+                    <button class="remove-btn" onclick="removeActionItem(${idx})">Remove</button>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div class="flex-row">
+                            <div>
+                                <label>Button Text Label</label>
+                                <input type="text" value="${item.label}" oninput="updateActionData(${idx}, 'label', this.value)">
+                            </div>
+                            <div>
+                                <label>Execution Node Type</label>
+                                <select onchange="updateActionData(${idx}, 'type', this.value)">
+                                    ${typeOptions}
+                                </select>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Color Profile</label>
-                            <select onchange="updateNode(${node.id}, 'color', this.value)">
-                                <option value="white">White</option>
-                                <option value="green">Green</option>
-                                <option value="gold">Gold</option>
-                                <option value="aqua">Aqua</option>
-                                <option value="red">Red</option>
-                            </select>
+                        <div>
+                            <label>${valueLabel}</label>
+                            <input type="text" value="${item.value || ''}" oninput="updateActionData(${idx}, 'value', this.value)">
                         </div>
                     </div>
                 `;
-                container.appendChild(nodeDiv);
+                container.appendChild(itemDiv);
             });
         }
 
-        function generateOutput() {
-            const npc = document.getElementById('npcName').value;
-            const mode = document.getElementById('dialogMode').value;
-            const warningBox = document.getElementById('warningBox');
-            const warningText = document.getElementById('warningText');
-            const outputCode = document.getElementById('outputCode');
+        function buildMinecraftText(input) {
+            if (input.trim().startsWith('{') && input.trim().endsWith('}')) {
+                try {
+                    return JSON.parse(input);
+                } catch(e) {
+                    return input; 
+                }
+            }
+            return input;
+        }
+
+        function updateAll() {
+            const type = document.getElementById('dialogType').value;
+            const titleInput = document.getElementById('dialogTitle').value;
+            const bodyInput = document.getElementById('dialogBody').value;
+            const version = document.getElementById('versionSelect').value;
+            const warnBox = document.getElementById('warnBox');
+            
+            warnBox.classList.remove('active');
+            warnBox.innerText = "";
+
+            let dialogJson = {
+                type: `minecraft:${type}`,
+                title: buildMinecraftText(titleInput),
+                body: buildMinecraftText(bodyInput)
+            };
+
+            if (type === 'notice') {
+                if (actionsList.length > 0) {
+                    let mainAct = actionsList;
+                    dialogJson.action = {
+                        label: mainAct.label,
+                        type: mainAct.type === 'dialog' ? "minecraft:open_dialog" : "minecraft:run_command",
+                        value: mainAct.value
+                    };
+                }
+            } else if (type === 'confirmation') {
+                if (actionsList.length >= 1) {
+                    dialogJson.confirm = { 
+                        label: actionsList.label, 
+                        type: actionsList.type === 'dialog' ? "minecraft:open_dialog" : "minecraft:run_command",
+                        value: actionsList.value 
+                    };
+                }
+                if (actionsList.length >= 2) {
+                    dialogJson.cancel = { 
+                        label: actionsList.label, 
+                        type: actionsList.type === 'dialog' ? "minecraft:open_dialog" : "minecraft:run_command",
+                        value: actionsList.value 
+                    };
+                }
+            } else if (type === 'multi_action' || type === 'dialog_list') {
+                dialogJson.actions = actionsList.map(item => ({
+                    label: item.label,
+                    type: item.type === 'dialog' ? "minecraft:open_dialog" : "minecraft:run_command",
+                    value: item.value
+                }));
+            } else if (type === 'server_links') {
+                dialogJson.links = actionsList.map(item => ({
+                    label: item.label,
+                    url: item.value
+                }));
+            }
+
+            if (version === '26.2') {
+                if (typeof dialogJson.title === 'string') dialogJson.title = { text: dialogJson.title };
+                if (typeof dialogJson.body === 'string') dialogJson.body = { text: dialogJson.body };
+            }
 
             let warnings = [];
-            if (!npc) warnings.push("NPC Name identifier cannot be empty for exact system executions.");
-            
-            // Format generation logic
-            if (currentVersion === '1.21.1' && mode === 'tellraw') {
-                let tellrawComponents = [{ text: `[${npc}] `, color: "gold", bold: true }];
-                
-                nodes.forEach(n => {
-                    let comp = { text: n.value || '', color: n.color || 'white' };
-                    if (n.type === 'player') {
-                        comp = { selector: n.value || '@p', color: n.color || 'aqua' };
-                        if (n.value && !n.value.startsWith('@')) warnings.push(`Invalid target selector '${n.value}' - use @p, @a, or @r.`);
-                    } else if (n.type === 'item') {
-                        comp = { text: `[Item: ${n.value || 'Air'}]`, color: "green", hoverEvent: { action: "show_item", contents: { id: `minecraft:${n.value || 'stone'}` } } };
-                    } else if (n.type === 'score') {
-                        comp = { score: { name: "*", objective: n.value || 'dummy' }, color: "yellow" };
-                    }
-                    tellrawComponents.push(comp);
-                });
-
-                outputCode.innerText = `/tellraw @a ${JSON.stringify(tellrawComponents, null, 2)}`;
-            } else {
-                // Datapack JSON Tree Structure
-                let dataPackTree = {
-                    version: currentVersion,
-                    npc_identity: npc,
-                    dialog_flow: nodes.map(n => ({
-                        type: n.type,
-                        resolved_value: n.value,
-                        metadata: { rendering_color: n.color || "white" }
-                    }))
-                };
-                outputCode.innerText = JSON.stringify(dataPackTree, null, 4);
+            if (!titleInput) warnings.push("⚠️ Validation Failsafe: Dialog system 'title' property cannot resolve empty.");
+            if (type === 'confirmation' && actionsList.length < 2) {
+                warnings.push("⚠️ Structural Constraint Error: Layout 'Confirmation' requires at least 2 structured actions (Confirmation + Cancellation paths).");
             }
+            
+            actionsList.forEach((a, i) => {
+                if (!a.value) warnings.push(`⚠️ Execution Failure: Button Action Node #${i+1} (${a.label}) contains an empty execution track value.`);
+            });
 
             if (warnings.length > 0) {
-                warningBox.style.display = 'flex';
-                warningText.innerText = warnings.join(' | ');
-            } else {
-                warningBox.style.display = 'none';
+                warnBox.innerHTML = warnings.join("<br>");
+                warnBox.classList.add('active');
+            }
+
+            const jsonString = JSON.stringify(dialogJson, null, 2);
+            document.getElementById('jsonOutput').innerText = jsonString;
+
+            const cleanInlineJson = JSON.stringify(dialogJson);
+            document.getElementById('commandOutput').innerText = `/dialog show @s ${cleanInlineJson}`;
+
+            document.getElementById('previewTitle').innerText = typeof dialogJson.title === 'object' ? (dialogJson.title.text || "[JSON Text Component Object]") : dialogJson.title;
+            document.getElementById('previewBody').innerText = typeof dialogJson.body === 'object' ? (dialogJson.body.text || "[JSON Text Component Object]") : dialogJson.body;
+
+            const btnContainer = document.getElementById('previewButtons');
+            btnContainer.innerHTML = "";
+
+            if (type === 'notice' && dialogJson.action) {
+                createPreviewBtn(dialogJson.action.label, btnContainer);
+            } else if (type === 'confirmation') {
+                if (dialogJson.confirm) createPreviewBtn(dialogJson.confirm.label, btnContainer);
+                if (dialogJson.cancel) createPreviewBtn(dialogJson.cancel.label, btnContainer);
+            } else if (dialogJson.actions) {
+                dialogJson.actions.forEach(a => createPreviewBtn(a.label, btnContainer));
+            } else if (dialogJson.links) {
+                dialogJson.links.forEach(l => createPreviewBtn(`🔗 ${l.label}`, btnContainer));
             }
         }
 
-        function copyToClipboard() {
-            const text = document.getElementById('outputCode').innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Copied to clipboard successfully!');
-            });
+        function createPreviewBtn(text, parent) {
+            const b = document.createElement('div');
+            b.className = 'mc-button';
+            b.innerText = text || "Button Node";
+            parent.appendChild(b);
         }
 
-        // Init setup
-        renderNodes();
-        generateOutput();
+        function copyJSON() {
+            navigator.clipboard.writeText(document.getElementById('jsonOutput').innerText);
+            alert("JSON payload copied successfully to system clipboard.");
+        }
+
+        function copyCommand() {
+            navigator.clipboard.writeText(document.getElementById('commandOutput').innerText);
+            alert("Runtime system invocation command copied successfully to clipboard.");
+        }
+
+        renderActionsForm();
+        updateAll();
     </script>
 </body>
 </html>
