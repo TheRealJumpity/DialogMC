@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dialog MC - Minecraft Dialog Generator</title>
+    <style>
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2d2d2d;
+            --accent: #4caf50;
+            --accent-hover: #45a049;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --warning: #ff9800;
+            --border: #3d3d3d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .version-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .version-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .version-btn.active {
+            background: var(--accent);
+            color: #000;
+            font-weight: 600;
+            border-color: var(--accent);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        .panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            max-height: calc(100vh - 120px);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            border-left: 3px solid var(--accent);
+            padding-left: 8px;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select, textarea {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .node-container {
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .node-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--border);
+        }
+
+        .btn-add {
+            background: var(--accent);
+            color: #000;
+            font-weight: 600;
+            border: none;
+        }
+
+        .btn-add:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-danger {
+            background: #cf6679;
+            color: #000;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background: #b05464;
+        }
+
+        .output-box {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            flex-grow: 1;
+            overflow-y: auto;
+            color: #ffb74d;
+        }
+
+        .validation-warning {
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .picker-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Dialog MC</h1>
+        <div class="version-selector">
+            <button class="version-btn active" onclick="setVersion('1.21.1')">Java 1.21.1</button>
+            <button class="version-btn" onclick="setVersion('26.2')">NeoForge 26.2 (JSON)</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Configuration Panel -->
+        <div class="panel">
+            <div class="section-title">Global Settings</div>
+            
+            <div class="form-group">
+                <label>NPC Name / Entity Selector</label>
+                <input type="text" id="npcName" value="Villager" oninput="generateOutput()">
+            </div>
+
+            <div class="form-group">
+                <label>Dialog System Mode</label>
+                <select id="dialogMode" onchange="generateOutput()">
+                    <option value="tellraw">Tellraw Command Sequential Sequence</option>
+                    <option value="datapack">Datapack Dialogue Config Format</option>
+                </select>
+            </div>
+
+            <div class="section-title">Dialog Nodes & Dynamic Insertions</div>
+            <div id="nodesList"></div>
+            
+            <button class="btn btn-add" onclick="addNode()">+ Add Dialog Text Window / Option</button>
+        </div>
+
+        <!-- Live Output Panel -->
+        <div class="panel">
+            <div class="section-title">Generated Config / Commands</div>
+            
+            <div class="validation-warning" id="warningBox">
+                <strong>⚠️ Verification Warning:</strong> <span id="warningText"></span>
+            </div>
+
+            <div class="output-box" id="outputCode">Select or create components to view commands.</div>
+            
+            <div class="action-row">
+                <button class="btn" style="flex-grow: 1;" onclick="copyToClipboard()">Copy Code</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentVersion = '1.21.1';
+        let nodes = [
+            { id: 1, type: 'text', value: 'Hello adventurer! Welcome to the realm.', target: 'player' }
+        ];
+
+        function setVersion(version) {
+            currentVersion = version;
+            document.querySelectorAll('.version-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.includes(version));
+            });
+            
+            const modeSelect = document.getElementById('dialogMode');
+            if (version === '26.2') {
+                modeSelect.value = 'datapack';
+            } else {
+                modeSelect.value = 'tellraw';
+            }
+            
+            generateOutput();
+        }
+
+        function addNode() {
+            const id = nodes.length ? nodes[nodes.length - 1].id + 1 : 1;
+            nodes.push({ id: id, type: 'text', value: '', target: 'player' });
+            renderNodes();
+            generateOutput();
+        }
+
+        function removeNode(id) {
+            nodes = nodes.filter(n => n.id !== id);
+            renderNodes();
+            generateOutput();
+        }
+
+        function updateNode(id, field, value) {
+            const node = nodes.find(n => n.id === id);
+            if (node) {
+                node[field] = value;
+                generateOutput();
+            }
+        }
+
+        function renderNodes() {
+            const container = document.getElementById('nodesList');
+            container.innerHTML = '';
+
+            nodes.forEach((node, index) => {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.className = 'node-container';
+                nodeDiv.innerHTML = `
+                    <div class="node-header">
+                        <span style="font-weight:600; font-size:0.9rem;">Element #${index + 1}</span>
+                        <button class="btn btn-danger" onclick="removeNode(${node.id})">Delete</button>
+                    </div>
+                    <div class="form-group">
+                        <label>Insertion Picker Type</label>
+                        <select onchange="updateNode(${node.id}, 'type', this.value); renderNodes();">
+                            <option value="text" ${node.type === 'text' ? 'selected' : ''}>Plain Text</option>
+                            <option value="player" ${node.type === 'player' ? 'selected' : ''}>Player Name Selector (@p)</option>
+                            <option value="item" ${node.type === 'item' ? 'selected' : ''}>Item Component Reference</option>
+                            <option value="score" ${node.type === 'score' ? 'selected' : ''}>Objective Score / Variable</option>
+                        </select>
+                    </div>
+                    <div class="picker-group">
+                        <div class="form-group">
+                            <label>Content / Selector Value</label>
+                            <input type="text" value="${node.value}" placeholder="Value..." oninput="updateNode(${node.id}, 'value', this.value)">
+                        </div>
+                        <div class="form-group">
+                            <label>Color Profile</label>
+                            <select onchange="updateNode(${node.id}, 'color', this.value)">
+                                <option value="white">White</option>
+                                <option value="green">Green</option>
+                                <option value="gold">Gold</option>
+                                <option value="aqua">Aqua</option>
+                                <option value="red">Red</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(nodeDiv);
+            });
+        }
+
+        function generateOutput() {
+            const npc = document.getElementById('npcName').value;
+            const mode = document.getElementById('dialogMode').value;
+            const warningBox = document.getElementById('warningBox');
+            const warningText = document.getElementById('warningText');
+            const outputCode = document.getElementById('outputCode');
+
+            let warnings = [];
+            if (!npc) warnings.push("NPC Name identifier cannot be empty for exact system executions.");
+            
+            // Format generation logic
+            if (currentVersion === '1.21.1' && mode === 'tellraw') {
+                let tellrawComponents = [{ text: `[${npc}] `, color: "gold", bold: true }];
+                
+                nodes.forEach(n => {
+                    let comp = { text: n.value || '', color: n.color || 'white' };
+                    if (n.type === 'player') {
+                        comp = { selector: n.value || '@p', color: n.color || 'aqua' };
+                        if (n.value && !n.value.startsWith('@')) warnings.push(`Invalid target selector '${n.value}' - use @p, @a, or @r.`);
+                    } else if (n.type === 'item') {
+                        comp = { text: `[Item: ${n.value || 'Air'}]`, color: "green", hoverEvent: { action: "show_item", contents: { id: `minecraft:${n.value || 'stone'}` } } };
+                    } else if (n.type === 'score') {
+                        comp = { score: { name: "*", objective: n.value || 'dummy' }, color: "yellow" };
+                    }
+                    tellrawComponents.push(comp);
+                });
+
+                outputCode.innerText = `/tellraw @a ${JSON.stringify(tellrawComponents, null, 2)}`;
+            } else {
+                // Datapack JSON Tree Structure
+                let dataPackTree = {
+                    version: currentVersion,
+                    npc_identity: npc,
+                    dialog_flow: nodes.map(n => ({
+                        type: n.type,
+                        resolved_value: n.value,
+                        metadata: { rendering_color: n.color || "white" }
+                    }))
+                };
+                outputCode.innerText = JSON.stringify(dataPackTree, null, 4);
+            }
+
+            if (warnings.length > 0) {
+                warningBox.style.display = 'flex';
+                warningText.innerText = warnings.join(' | ');
+            } else {
+                warningBox.style.display = 'none';
+            }
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('outputCode').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard successfully!');
+            });
+        }
+
+        // Init setup
+        renderNodes();
+        generateOutput();
+    </script>
+</body>
+</html>
